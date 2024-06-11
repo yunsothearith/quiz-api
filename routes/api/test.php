@@ -11,9 +11,9 @@ use App\Http\Controllers\Testing\ExternalService\TelegramController;
 Route::get('/calculate', [TestingController::class, 'calculate']);
 
 // ========================================================================>> Telegram Bot
-Route::get('/send-telegram-bot/sendMessage',    [TelegramController::class, 'sendMessage']);
-Route::post('/send-telegram-bot/sendPhoto',     [TelegramController::class, 'sendPhoto']);
-Route::get('/send-telegram-bot/sendLocation',  [TelegramController::class, 'sendLocation']);
+Route::get('/send-telegram-bot/sendMessage', [TelegramController::class, 'sendMessage']);
+Route::post('/send-telegram-bot/sendPhoto', [TelegramController::class, 'sendPhoto']);
+Route::get('/send-telegram-bot/sendLocation', [TelegramController::class, 'sendLocation']);
 
 // ========================================================================>> Send Email
 Route::post('/send-email', [EmailController::class, 'sendEmailRaw']);
