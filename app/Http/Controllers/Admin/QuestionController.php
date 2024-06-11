@@ -23,10 +23,11 @@ use App\Models\Question\Question;
 
 class QuestionController extends MainController
 {
-    public function getData(Request $req){
+    public function getData(Request $req)
+    {
 
         // Declare Variable
-        $data = Question::select('*') ;// Include the count of questions
+        $data = Question::select('*');// Include the count of questions
 
         // ===>> Filter Data
         // By Key compared with Code or Name
@@ -36,12 +37,96 @@ class QuestionController extends MainController
         }
 
         $data = $data->orderBy('id', 'desc') // Order Data by Giggest ID to small
-        ->paginate($req->limit ? $req->limit : 10,'per_page'); // Paginate Data
+            ->paginate($req->limit ? $req->limit : 10, 'per_page'); // Paginate Data
 
         // ===> Success Response Back to Client
         return response()->json($data, Response::HTTP_OK);
 
     }
-    
+
+    public function create(Request $req)
+    {
+        $validation = $req->validate([
+            'quiz_id' => 'required| integer',
+            'name' => 'required | string '
+        ]);
+
+
+        $data = new Question();
+        $data->quiz_id = $req->quiz_id;
+        $data->name = $req->name;
+        $data->answer_type = $req->answer_type;
+
+        $data->save();
+
+        $data = Question::select('id', 'quiz_id', 'name', 'answer_type')
+            ->with([
+                'quiz' => function ($query) {
+                    $query->select('id', 'name');
+                }
+            ])->find($data->id);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Question has been create successfully',
+            'data' => $data
+        ], 200);
+    }
+    public function update(Request $req, $id)
+    {
+
+        $validation = $req->validate([
+            'quiz_id' => 'required|integer',
+            'name' => 'required|string'
+        ]);
+
+        $data = Question::find($id);
+        if (!$data) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Question not found'
+            ], 404);
+        }
+
+        $data->quiz_id = $req->quiz_id;
+        $data->name = $req->name;
+        $data->answer_type = $req->answer_type;
+
+        $data->save();
+
+        $data = Question::select('id', 'quiz_id', 'name', 'answer_type')
+            ->with([
+                'quiz' => function ($query) {
+                    $query->select('id', 'name');
+                }
+            ])->find($data->id);
+
+        // Return response
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Question has been updated successfully',
+            'data' => $data
+        ], 200);
+    }
+
+    public function delete($id)
+    {
+
+        $data = Question::find($id);
+        if (!$data) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Question not found'
+            ], 404);
+        }
+
+        $data->delete();
+
+        // Return response
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Question has been deleted successfully'
+        ], 200);
+    }
 
 }
