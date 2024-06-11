@@ -27,10 +27,10 @@ class QuestionController extends MainController
     {
 
         // Declare Variable
-        $data = Question::select('*');// Include the count of questions
-
-        // ===>> Filter Data
-        // By Key compared with Code or Name
+        $data = Question::select('id', 'name', 'answer_type')
+        ->with([
+            'answers:id,question_id,text,is_correct'
+        ]);
         if ($req->key && $req->key != '') {
 
             $data = $data->where('name', 'LIKE', '%' . $req->key . '%');

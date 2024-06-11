@@ -20,10 +20,8 @@ return new class extends Migration
             $table->string('selected_options')->nullable();
             $table->timestamps();
             $table->softDeletes();
-
         });
     }
-
     /**
      * Reverse the migrations.
      */
