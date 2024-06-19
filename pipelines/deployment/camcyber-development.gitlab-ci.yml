@@ -1,0 +1,20 @@
+deploy:camcyber:api:development:
+  stage: deploy:camcyber:api:development
+  variables:
+    PROJECT_NAME: Edvise
+    SERVICE_TYPE: edvise-api
+    SERVICE_NAMESPACE: ${PROJECT_NAME}/${SERVICE_TYPE}
+    ENABLED_BUILD: 'true'
+  environment:
+    name: 'CamCyber/${PROJECT_NAME}/Development'
+  only:
+    # - /^v-.*-release$/
+    - develop
+  before_script:
+    - source ${CAMCYBER_UAT_ENVIRONMENT}
+  script:
+    - echo $CI_COMMIT_REF_NAME
+    - bash -e scripts/deploy.sh
+  after_script:
+    - source ${CAMCYBER_UAT_ENVIRONMENT}
+    - bash -e scripts/notify/telegram.sh $CI_JOB_STATUS

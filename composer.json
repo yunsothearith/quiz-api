@@ -19,7 +19,10 @@
         "mockery/mockery": "^1.4.4",
         "nunomaduro/collision": "^7.0",
         "phpunit/phpunit": "^10.0",
-        "spatie/laravel-ignition": "^2.0"
+        "spatie/laravel-ignition": "^2.0",
+        "irazasyed/telegram-bot-sdk": "^3.0"
+        
+
     },
     "autoload": {
         "psr-4": {
@@ -30,7 +33,10 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/"
+            "Tests\\": "tests/",
+            "Telegram\\Bot\\FileUpload\\": "path/to/telegram-bot-sdk/src/FileUpload/"
+
+
         }
     },
     "scripts": {

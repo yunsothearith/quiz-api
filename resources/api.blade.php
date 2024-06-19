@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Calmette Quiz System API</title>
+    <title>{{ env("APP_NAME") }}</title>
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
@@ -23,20 +23,24 @@
             align-items: center;
             color: rgb(111, 111, 111);
         }
-        .d-flex{
+
+        .d-flex {
             display: flex;
             align-items: center;
             flex-direction: column;
         }
-        .d-flex h2{
+
+        .d-flex h2 {
             margin: 0;
             padding: 0;
         }
-        .p-4{
+
+        .p-4 {
             padding: 1rem;
         }
-        @media (max-width: 600px){
-            body{
+
+        @media (max-width: 600px) {
+            body {
                 font-size: 1rem;
             }
         }
@@ -45,7 +49,7 @@
 
 <body>
     <div class="d-flex p-4">
-        <h2>Calmette Quiz System API</h2>
+        <h2>{{ env("APP_NAME") }}</h2>
         <p>Laravel v{{ Illuminate\Foundation\Application::VERSION }} (PHP v{{ PHP_VERSION }})</p>
     </div>
 </body>

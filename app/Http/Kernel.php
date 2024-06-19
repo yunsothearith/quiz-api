@@ -40,9 +40,9 @@ class Kernel extends HttpKernel
 
         'api' => [
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
+            \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\ForceJsonResponse::class //Yim Klok (01/31/2024 10:50 AM)
+            \App\Http\Middleware\ForceJsonResponse::class //Yim Klok (01/31/2024 10:17 AM)
         ],
     ];
 
@@ -64,6 +64,12 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'jwt.verify' => \App\Http\Middleware\JwtMiddleware::class //Yim Klok (2/22/2023 12:50 AM)
+        'jwt.verify' => \App\Http\Middleware\JwtMiddleware::class, //Yim Klok (2/22/2023 12:50 AM)
+        'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        'dynamic' => \App\Http\Middleware\DynamicMiddleware::class,
+        'manager' => \App\Http\Middleware\ManagerMiddleware::class,
+        'finance' => \App\Http\Middleware\FinanceMiddleware::class,
+        'consultant' => \App\Http\Middleware\ConsultantMiddleware::class,
+        'registration' => \App\Http\Middleware\RegistrationMiddleware   ::class
     ];
 }

@@ -1,0 +1,84 @@
+- name: Looking environments 
+  set_fact:
+    service_namespace: "{{ lookup('env', 'SERVICE_NAMESPACE') | default('', true) }}"
+    service_type: "{{ lookup('env', 'SERVICE_TYPE') | default('', true) }}"
+    repo_path: "{{ lookup('env', 'CI_PROJECT_PATH') | default('', true) }}"
+    ci_branch: "{{ lookup('env', 'CI_COMMIT_REF_NAME') | default('', true) }}"
+    enabled_build: "{{ lookup('env', 'ENABLED_BUILD') | default('', true )}}"
+
+- name: Create app project directory
+  ansible.builtin.file:
+    path: /app/{{ service_namespace }}
+    state: directory
+    recurse: yes
+  register: app_dir
+  no_log: true
+
+- name: Clone remote repository into server
+  ansible.builtin.git:
+    repo: git@gitlab.camcyber.com:{{ repo_path }}.git
+    dest: '{{ app_dir.path }}'
+    accept_hostkey: true
+    version: '{{ ci_branch }}'
+  no_log: true
+
+- name: Run docker compose {{ service_type }}
+  community.docker.docker_compose:
+    project_name: '{{ service_type }}'
+    build: true
+    recreate: always
+    definition:
+      version: '3.8'
+      services:
+        api:
+          container_name: '{{ service_type }}'
+          build: '{{ app_dir.path }}'
+          volumes:
+            - '{{ app_dir.path }}/app/:/var/www/app'
+            - '{{ app_dir.path }}/database/:/var/www/database'
+            - '{{ app_dir.path }}/resources/:/var/www/resources'
+            - '{{ app_dir.path }}/routes/:/var/www/routes'
+            - '{{ app_dir.path }}/storage/:/var/www/storage'
+            - '{{ app_dir.path }}/public/:/var/www/public'
+          environment:
+            # ============================>> Database
+            APP_NAME : EDVISE API V2
+            APP_ENV : local
+            APP_KEY : base64:Tzkcys/HbWuJr83Lu44ktpfIE8uc/huFzhCoMGX4Z74=
+            APP_DEBUG : "true"
+            APP_LOG_LEVEL : debug
+            APP_TIMEZONE : Asia/Phnom_Penh
+            APP_URL: http://localhost
+
+            # ============================>> Database
+            DB_CONNECTION: mysql
+            DB_HOST: mysql-v8.0
+            DB_PORT: 3306
+            DB_DATABASE: edvise_uat
+            DB_USERNAME: root
+            DB_PASSWORD: secret
+            # ============================>> JWT
+            JWT_SECRET : MTO7OmBzXhbPI2bErLjV9XEFbpCn3MHCPxKdcBxiFHjuWJirIayTB9npa4cGNAFX
+            #===========================>> File V3
+            FILE_URL        : http://edvise-file-v1:8002
+            FILE_BASE_URL   : http://file-api-v3:8080
+            FILE_USERNAME   : admin
+            FILE_PASSWORD   : irIayTB9npa4cGNAFX
+            FILE_KEY        : edvise
+            #===========================>> Email
+            MAIL_MAILER       : smtp
+            MAIL_HOST         : smtp.gmail.com
+            MAIL_PORT         : 587
+            MAIL_USERNAME     : pwttd.document@gmail.com
+            MAIL_PASSWORD     : cfogfctlibdwdogd
+            MAIL_ENCRYPTION   : tls
+            MAIL_FROM_ADDRESS : pwttd.document@gmail.com
+            MAIL_FROM_NAME    : 'Edvise - VISA Application Management System'
+          ports:
+            - '6001:8000'
+          networks:
+            - camcyber
+      networks:
+        camcyber:
+            external: true
+  no_log: true

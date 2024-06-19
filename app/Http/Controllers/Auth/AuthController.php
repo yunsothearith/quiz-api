@@ -2,18 +2,15 @@
 
 namespace App\Http\Controllers\Auth;
 
-// ===================================================>> Core Library
-use Illuminate\Http\Request; // For Getting requested Payload from Client
-use Illuminate\Http\Response; // For Responsing data back to Client
-
-// ===================================================>> Third Party Library fuck
+use App\Enum\RoleEnum;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use App\Http\Controllers\Controller;
+use App\Models\User\User;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
-// ===================================================>> Custom Library
-use App\Http\Controllers\MainController;
-
-class AuthController extends MainController
+class AuthController extends Controller
 {
     /**
      * Create a new AuthController instance.
@@ -30,10 +27,11 @@ class AuthController extends MainController
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function login(Request $req){
-
-        // ===>> Data Validation
-        $this->validate($req,
+    public function login(Request $req)
+    {
+        // ================================================>> Data Validation
+        $this->validate(
+            $req,
             [
                 'username' => ['required'],
                 'password' => 'required|min:6|max:20'
@@ -46,75 +44,65 @@ class AuthController extends MainController
             ]
         );
 
-        // ===>> Check Login
+        // =================>> Role must != Customer && isActive = 1
+        $user = User::where('phone', $req->username)->where('is_active', 1)->first();
+        if (!$user || $user->role_id == RoleEnum::CUSTOMER) {
+            return response([
+                'status'  => 'error',
+                'message' => 'ឈ្មោះអ្នកប្រើឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ។'
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        // ================================================>> Check Login
         $credentials = array(
             'phone'             =>  $req->username,
-            'password'          =>  $req->password,
-            'is_active'         =>  1,
-            'deleted_at'        =>  null,
+            'password'          =>  $req->password
         );
 
         try {
-
-            // ===>> Set JWT Token Time To Live
-            JWTAuth::factory()->setTTL(1200); //1200 នាទី
-
-            // ===>> Credentails comparation by JWTAuth in DB using table user
+            JWTAuth::factory()->setTTL(10080); //10080 នាទី => 7day
             $token = JWTAuth::attempt($credentials);
-
-            // ===>> Check if Token is not valid
-            if (!$token) { // Yes
-
-                // ===>> Failed Response Back to Client due to invalide username or password
-                return response()->json([
+            if (!$token) {
+                return response([
                     'status'    => 'error',
                     'message'   => 'ឈ្មោះអ្នកប្រើឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ។'
                 ], Response::HTTP_UNAUTHORIZED);
-
             }
-
         } catch (JWTException $e) {
-
-            // ===>> Failed Response Back to Client due to Server Errro
-            return response()->json([
+            return response([
                 'status'    => 'បរាជ័យ',
-                'message'   => 'Cannot Login',
+                'message'   => 'មិនអាចបង្កើតនិមិត្តសញ្ញាទេ',
                 'error'     => $e->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
-
         }
 
-        // ==>> Get Data from Auth App for User object
+        // ================================================>> Prepare Response Data
         $user = auth()->user();
-
-        // ===>> User Format
         $dataUser = [
             'id'        => $user->id,
             'name'      => $user->name,
+            'phone'     => $user->phone,
             'email'     => $user->email,
             'avatar'    => $user->avatar,
-            'phone'     => $user->phone
+            'role'      => $user->role->name
         ];
 
-        // ====> Check Role
-        $role = '';
-        if ($user->type_id == 2) { //
-            $role = 'User';
-        } else {
-            $role = 'Admin';
-        }
-
-        // ===>> Success Response Back to Client
-        return response()->json([
-            'access_token'  => $token,
-            'token_type'    => 'bearer',
-            'expires_in'    => JWTAuth::factory()->getTTL() / 60 . ' hours',
-            'user'          => $dataUser,
-            'role'          => $role
+        // ================================================>> Response Back to Client
+        $expires_in = JWTAuth::factory()->getTTL() >= 1440 ? (JWTAuth::factory()->getTTL() / 60) / 24 . ' days' : JWTAuth::factory()->getTTL() / 60 . ' hours';
+        return response([
+            'status'    => 'success',
+            'data'      => [
+                'access_token'  => $token,
+                'expires_in'    => $expires_in,
+                'user'          => $dataUser,
+            ]
         ], Response::HTTP_OK);
-
     }
 
+    public function register(Request $req)
+    {
+        return $req->all();
+    }
 
     /**
      * Log the user out (Invalidate the token).
@@ -123,12 +111,10 @@ class AuthController extends MainController
      */
     public function logout()
     {
-        // ===>> Make Application Logout
         auth()->logout();
-
-        // ===>> Success Response Back to Client
-        return response()->json(['message' => 'Successfully logged out'], 200);
+        return response([
+            'status'    => 'success',
+            'message'   => 'Successfully logged out'
+        ], Response::HTTP_OK);
     }
-
-
 }

@@ -4,17 +4,20 @@ EXPOSE 8000
 
 WORKDIR /var/www
 
-# Increase Upload Max File Size
-COPY ./custom.ini /usr/local/etc/php/conf.d/custom.ini
+RUN echo "max_file_uploads=800" >> /usr/local/etc/php/conf.d/docker-php-ext-max_file_uploads.ini
+RUN echo "post_max_size=500M" >> /usr/local/etc/php/conf.d/docker-php-ext-post_max_size.ini
+RUN echo "upload_max_filesize=500M" >> /usr/local/etc/php/conf.d/docker-php-ext-upload_max_filesize.ini
+RUN echo "memory_limit=512M" >> /usr/local/etc/php/conf.d/docker-php-ext-memory_limit.ini
+RUN echo "max_execution_time=600" >> /usr/local/etc/php/conf.d/docker-php-ext-max_execution_time.ini
+RUN echo "file_uploads=On" >> /usr/local/etc/php/conf.d/docker-php-ext-file_uploads.ini
 
-# Copy all code from Local Machine to Image
 COPY .  /var/www
-
 RUN rm -f composer.lock
-RUN composer install
-RUN php artisan cache:clear
+RUN composer update
+RUN composer dump-autoload
+RUN php artisan cache:clear 
 RUN php artisan config:clear
-#RUN cp .env.example .env
-#RUN php artisan key:generate
-
+RUN cp .env.example .env
+RUN chown -R www-data:www-data /var/www \
+    && chmod -R 777 /var/www/storage
 CMD php artisan --host=0.0.0.0 serve
