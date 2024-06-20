@@ -13,7 +13,7 @@ use Carbon\Carbon; // Data Time format & Calculation
 
 // ============================================================================>> Custome Library
 // Controller
-use App\Http\Controllers\MainController;
+use App\Http\Controllers\Controller;
 
 // Service
 use App\Services\FileUpload; // Upload Image/File to File Micro Serivce
@@ -21,7 +21,7 @@ use App\Services\FileUpload; // Upload Image/File to File Micro Serivce
 // Model
 use App\Models\Question\Question;
 
-class QuestionController extends MainController
+class QuestionController extends Controller
 {
     public function getData(Request $req)
     {
